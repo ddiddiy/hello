@@ -1,8 +1,16 @@
-ALL COMMANDS:
 
-------------------------------------------------------------------------
-practical 10: ARGO CD
-[POWERSHELL]
+
+---
+
+# ALL COMMANDS
+
+---
+
+## Practical 10: ARGO CD
+
+**[POWERSHELL]**
+
+```
 fork GitHub argocd
 minikube start --driver=docker
 minikube status
@@ -13,18 +21,32 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 kubectl get pods -n argocd
 
 kubectl port-forward svc/argo-server -n argocd 8080:443 --address 0.0.0.0
+```
 
-<h5>kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"
-[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("SjZFWGdhN0lUOWp1ZlBxdw=="))</h5>
-------------------------------------------------------------------------------------
-practical 9: Kafka Demo
-[POWERSHELL]
+```
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"
+
+[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("SjZFWGdhN0lUOWp1ZlBxdw=="))
+```
+
+---
+
+# Practical 9: Kafka Demo
+
+**[POWERSHELL]**
+
+```
 cd desktop
 mkdir kafa-demo
-[create Docker-compose.yml file in kafka-demo folder]
-Docker-compose.yml:
+```
+
+Create **Docker-compose.yml** file inside kafka-demo folder
+
+```
 version: "3.8"
+
 services:
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: zookeeper
@@ -46,534 +68,481 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+```
 
+```
 ls
 docker compose up -d
 docker compose -f docker-compose.yml up -d
 docker ps
-docker exec -it kafka kafka-topics --create --topic quick-demo --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+```
 
-open another powershell:
+Create Topic
+
+```
+docker exec -it kafka kafka-topics --create --topic quick-demo --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+```
+
+Open another PowerShell
+
+```
 docker exec -it kafka kafka-topics --describe --topic quick-demo --bootstrap-server localhost:9092
 docker exec -it kafka kafka-console-producer --topic quick-demo --bootstrap-server localhost:9092 .
+```
 
-previous powershell:
+Previous PowerShell
+
+```
 docker exec -it kafka kafka-console-consumer --topic quick-demo --bootstrap-server localhost:9092 .
------------------------------------------------------------------------------------------------------------
-practical 8:kubernetes working & installation
-[POWERSHELL]
+```
+
+---
+
+# Practical 8: Kubernetes Working & Installation
+
+**[POWERSHELL]**
+
+```
 minikube start --driver=docker
 minikube status
 kubectl get nodes
+
 kubectl create deployment hello-minikube --image=kicbase/echo-server:1.0
+
 kubectl expose deployment hello-minikube --type=NodePort --port=8080
+
 minikube service hello-minikube --url
------------------------------------------------------------------------------
-assignment 
-Build an image installing git and apache2 via Dockerfile
+```
 
-create a folder soa
-2 file:
+---
+
+# Assignment
+
+### Build an image installing git and apache2 via Dockerfile
+
+Create folder **soa**
+
+Create 2 files
+
+```
 index.html
-Dockerfile:
-FROM ubuntu:22.04
-RUN sed -i 's/archive.ubuntu.com/mirrors.edge.kernel.org/g'
-/etc/apt/sources.list
-RUN apt-get update && apt-get install -y \
-    git \
-    apache2 \
-    && apt-get clean
-COPY index.html /var/www/html/index.html
-EXPOSE 80
-CMD ["apachectl", "-D","FOREGROUND"]
+Dockerfile
+```
 
-open soa in powershell:
+Dockerfile
+
+```
+FROM ubuntu:22.04
+
+RUN sed -i 's/archive.ubuntu.com/mirrors.edge.kernel.org/g' /etc/apt/sources.list
+
+RUN apt-get update && apt-get install -y \
+    git \
+    apache2 \
+    && apt-get clean
+
+COPY index.html /var/www/html/index.html
+
+EXPOSE 80
+
+CMD ["apachectl", "-D","FOREGROUND"]
+```
+
+Open **soa folder in PowerShell**
+
+```
 docker build -t apache-docker .
 docker run -d -p 8090:80 apache-docker
-- now we can access the website using `http://localhost:8090`
-- once this is done we can now put this up on kubernetes cluster using minikube and kubectl
-- we have add the image to minikube using `minikube image load apache-docker`
-- we have to create a deployment for the apache server using `kubectl create deployment apache-deployment --image=apache-docker --image-pull-policy=Never`
-- we have to expose the deployment using `minikube service apache-deployment`
---------------------------------------------------------------------------------
-practical 6: Create a Restful API Microservice and Create a Docker Image of the Microservice
+```
 
-create a web app on netbeans > microservice
-create pattern: microservice-jaxrs
+Access Website
+
+```
+http://localhost:8090
+```
+
+Deploy to Kubernetes
+
+```
+minikube image load apache-docker
+
+kubectl create deployment apache-deployment --image=apache-docker --image-pull-policy=Never
+
+minikube service apache-deployment
+```
+
+---
+
+# Practical 6: RESTful API Microservice + Docker Image
+
+Create Web App in NetBeans
+
+```
+microservice
+pattern: microservice-jaxrs
 resource package: com.example
+```
 
+```
 public String hello(){
-        return "Jax-RS Microservice -DockerReady";
-    }
-   
-    @GET
-    @Path("status")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String status(){
-        return "{\"status\":\"healthy\",\"service\":\"microservice\"}";
-    }
+    return "Jax-RS Microservice -DockerReady";
+}
 
-.war file will be created in ur project > dist 
-create a Dockerfile for tomcat:
+@GET
+@Path("status")
+@Produces(MediaType.APPLICATION_JSON)
+public String status(){
+    return "{\"status\":\"healthy\",\"service\":\"microservice\"}";
+}
+```
+
+WAR file generated in:
+
+```
+project > dist
+```
+
+Dockerfile
+
+```
 FROM tomcat:8.5-jdk8
-COPY microservice-jaxrs.war /usr/local/tomcat/webapps/ROOT.war
-EXPOSE 8080
-CMD ["catalina.sh", "run"]
 
-go to powershell in dist location
+COPY microservice-jaxrs.war /usr/local/tomcat/webapps/ROOT.war
+
+EXPOSE 8080
+
+CMD ["catalina.sh", "run"]
+```
+
+Commands
+
+```
 docker build -t microservice .
 docker run microservice
+
 docker run -d -p 9090:8080 --name jax-rs microservice
-go to google > localhost:9090
-----------------------------------------------------------------------------
-practical 5: Use of docker with sql in cmd
+```
 
-create a folder:
-create 2 files:
-hello.py:
+Open Browser
+
+```
+localhost:9090
+```
+
+---
+
+# Practical 5: Docker with SQL
+
+Create Folder
+
+Files
+
+```
+hello.py
+Dockerfile
+```
+
+hello.py
+
+```
 print("hello from python")
+```
 
-Dockerfile:
+Dockerfile
+
+```
 FROM python:3.12-slim
+
 WORKDIR /app
+
 COPY hello.py .
-CMD ["python","hello.py]
 
-go to powershell in that folder:
+CMD ["python","hello.py"]
+```
+
+Commands
+
+```
 docker build -t py-hello .
+
 docker run py-hello
-docker pull MySQL:latest
+
+docker pull mysql:latest
+
 docker run -d --name mydemo -p 3306:3306 -e MYSQL_ROOT_PASSWORD=student123 mysql:latest
+
 docker exec -it mydemo mysql -uroot -pstudent123
-----------------------------------------------------------------------------
-Prac4 : Jax RS Client For Hello World and String Conversion RS Services
+```
 
-java app>JAXRS_Client
-click right > properties > add library
-new java class:
-name:restClient.java
-package: default
+---
 
+# Practical 4: JAX-RS Client
+
+Create Java Application
+
+```
+JAXRS_Client
+```
+
+Add Library → JAXRS
+
+Create Class
+
+```
+restClient.java
+```
+
+```
 public static void main(String[] args){
-        Client c = ClientBuilder.newClient();
-        WebTarget t = c.target("http://localhost:8080/restPatterns/webresources/strings/upper").
-                queryParam("text","hello shelly");
-        String res = t.request(MediaType.TEXT_PLAIN).get(String.class);
-        System.out.println("RESPONSE: "+res);
-        c.close();
-    }
-----------------------------------------------------------------------------
-Prac 3: Jax Rs Demo and Prac
 
-java web: UpperLower
-add patterns:
-name:stringRS
-package name: stringrs
+    Client c = ClientBuilder.newClient();
 
+    WebTarget t = c.target("http://localhost:8080/restPatterns/webresources/strings/upper")
+            .queryParam("text","hello shelly");
+
+    String res = t.request(MediaType.TEXT_PLAIN).get(String.class);
+
+    System.out.println("RESPONSE: "+res);
+
+    c.close();
+}
+```
+
+---
+
+# Practical 3: JAX-RS Demo
+
+Project
+
+```
+UpperLower
+```
+
+Resource
+
+```
+stringRS
+package: stringrs
+```
+
+```
 @GET
-    @Path("lower")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String toLower(@QueryParam("text") String text) {
-        return text.toLowerCase();
-    }
-    
-@GET
-    @Path("upper")
-    @Consumes(MediaType.TEXT_PLAIN)
-    public String toUpper(@QueryParam("text") String text){
-        return text.toUpperCase();
-    }
-
-java web: helloworld:
-
-@GET
-    @Produces(MediaType.TEXT_HTML)
-    public String getXml() {
-        return "<html><body>HELLO WORLD</body></html>";
-    }
-
-    @PUT
-    @Path("{id}")
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes(MediaType.APPLICATION_JSON)
-    
-    public Response updateMessage(@PathParam("id") String id, String message) 
-    {
-        String result = "Update message " + id + " with " + message;
-        return Response.ok(result).build();
-    }
-----------------------------------------------------------------------------
-Prac2: Web Service Jax-ws (naac)
-
-crate web app: NaacRate
-add webservice: 
-name: NaacService
-package: client
-
-@WebMethod(operationName = "rate")
-    public String rate(@WebParam(name = "naac") String naac) {
-        if ("jai hind".equals(naac)){
-            return "A";
-        }
-        else if("kc".equals(naac)){
-        return "B";
-        }
-        return "invild";
-    }
-
-
-create java app: NaacClient
-web service client : paste WSDL url
-
-add java class:
-name: NaacClient
-package: naacclient
-
-public static void main(String[] args) {
-
-        client.NaacService_Service Service = new client.NaacService_Service();
-        client.NaacService port = Service.getNaacServicePort();
-        
-        String collegeName = "kc";
-        String result = port.rate(collegeName);
-        
-        System.out.println("RATING: " + result);
-    }
-
-run java file
-
-create a new web app: TestClient
-add web service client 
-paste WSDL url
-
-add java class:
-name: NaacServlet
-package: naac.web
-
-@WebServlet("/naac")
-public class NaacServlet extends HttpServlet {
-
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        String collegeName = request.getParameter("college");
-        
-        client.NaacService_Service Service = new client.NaacService_Service();
-        client.NaacService port = Service.getNaacServicePort();
-        
-        String result = port.rate(collegeName);
-        
-        request.setAttribute("rating", result);
-        request.getRequestDispatcher("result.jsp").forward(request, response);
-    }
-
-add two jsp file inside webpages:
-index.jsp:
-<body>
-        <h1>College Rating</h1>
-        <form action="naac" method="post">
-            College Name:
-            <input type="text" name="college" required/>
-            <br>
-            <input type="submit" value="Get Rating"/>
-        </form>
-</body>
-
-result.jsp:
-<body>
-        <h1>Naac Rating</h1>
-        <p>Rating: ${rating}</p>
-        <br><br>
-        
-        <a href="index.jsp">back</a>
-    </body>
-----------------------------------------------------------------------
-JAX_WS
-
-SOAP Service – Currency Conversion:
-Create Project
-Java Web → Web Application
-Project Name: CurrencySOAP
-
-Create Web Service
-Right click Source Packages
-New → Web Service
-Name: CurrencyService
-Package: com.soap
-
-Add Method:
-
-package com.soap;
-
-import javax.jws.WebService;
-import javax.jws.WebMethod;
-
-@WebService
-public class CurrencyService {
-
-    @WebMethod
-    public double convertUSDToINR(double usd) {
-        double rate = 83.0;
-        return usd * rate;
-    }
+@Path("lower")
+@Produces(MediaType.TEXT_PLAIN)
+public String toLower(@QueryParam("text") String text){
+    return text.toLowerCase();
 }
 
-Test Service
-http://localhost:8080/CurrencySOAP/CurrencyService?wsdl
-----------------------------------------------------------
-SOAP Service – Student Details by ID
+@GET
+@Path("upper")
+@Consumes(MediaType.TEXT_PLAIN)
+public String toUpper(@QueryParam("text") String text){
+    return text.toUpperCase();
+}
+```
+
+HelloWorld Service
+
+```
+@GET
+@Produces(MediaType.TEXT_HTML)
+public String getXml(){
+    return "<html><body>HELLO WORLD</body></html>";
+}
+
+@PUT
+@Path("{id}")
+@Produces(MediaType.TEXT_PLAIN)
+@Consumes(MediaType.APPLICATION_JSON)
+
+public Response updateMessage(@PathParam("id") String id, String message){
+
+    String result = "Update message " + id + " with " + message;
+
+    return Response.ok(result).build();
+}
+```
+
+---
+
+# Practical 2: JAX-WS (NAAC Web Service)
+
+Create Web App
+
+```
+NaacRate
+```
+
 Web Service
-Name: StudentService
 
-Code:
-package com.soap;
+```
+NaacService
+package: client
+```
 
-import javax.jws.WebService;
-import javax.jws.WebMethod;
+```
+@WebMethod(operationName = "rate")
+public String rate(@WebParam(name = "naac") String naac){
 
-@WebService
-public class StudentService {
-
-    @WebMethod
-    public String getStudentDetails(int id) {
-
-        if(id == 1)
-            return "ID:1 Name:Rahul Course:IT";
-
-        if(id == 2)
-            return "ID:2 Name:Anita Course:CS";
-
-        return "Student Not Found";
+    if("jai hind".equals(naac)){
+        return "A";
     }
-}
-Step 3: Run
-http://localhost:8080/CurrencySOAP/StudentService?wsdl
------------------------------------------------------------
-SOAP Service – Power(a,b)
 
-Create Web Service > PowerService
-Code:
-
-package com.soap;
-
-import javax.jws.WebService;
-import javax.jws.WebMethod;
-
-@WebService
-public class PowerService {
-
-    @WebMethod
-    public double power(int a, int b) {
-        return Math.pow(a, b);
+    else if("kc".equals(naac)){
+        return "B";
     }
+
+    return "invalid";
 }
-Step 3: Run
-http://localhost:8080/CurrencySOAP/PowerService?wsdl
--------------------------------------------------------
-SOAP Service – Temperature Conversion
+```
 
-Create Web Service > TemperatureService
-Code:
+Client
 
-package com.soap;
+```
+public static void main(String[] args){
 
-import javax.jws.WebService;
-import javax.jws.WebMethod;
+    client.NaacService_Service Service = new client.NaacService_Service();
 
-@WebService
-public class TemperatureService {
+    client.NaacService port = Service.getNaacServicePort();
 
-    @WebMethod
-    public double celsiusToFahrenheit(double c) {
-        return (c * 9/5) + 32;
-    }
+    String collegeName = "kc";
+
+    String result = port.rate(collegeName);
+
+    System.out.println("RATING: " + result);
 }
-Step 3: Run
-http://localhost:8080/CurrencySOAP/TemperatureService?wsdl
+```
 
--------------------------------------------------------------------
-JAX-RS
+---
 
-Create REST API that returns JSON Student Object
+# JAX-WS SOAP Services
 
-Java Web → Web Application
-Project Name: RestServices
+### Currency Conversion
 
-Right click Project
-New → RESTful Web Services from Patterns
-Select Simple Root Resource Class
+```
+convertUSDToINR(double usd)
+rate = 83
+return usd * rate
+```
 
-Class Name: StudentService
-Package: com.rest
+WSDL
 
-Create Student Class
-Create new class: Student.java
-package com.rest;
+```
+http://localhost:8080/CurrencySOAP/CurrencyService?wsdl
+```
 
-public class Student {
+---
 
-    public int id;
-    public String name;
-    public String course;
+### Student Details
 
-    public Student(int id, String name, String course) {
-        this.id = id;
-        this.name = name;
-        this.course = course;
-    }
-}
+```
+getStudentDetails(int id)
+```
 
-Resource Class
-package com.rest;
+```
+if(id == 1) Rahul IT
+if(id == 2) Anita CS
+else Student Not Found
+```
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+---
 
-@Path("student")
-public class StudentService {
+### Power Service
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Student getStudent() {
+```
+power(a,b) = Math.pow(a,b)
+```
 
-        Student s = new Student(1,"Rahul","IT");
-        return s;
-    }
-}
+---
 
-Open browser:
+### Temperature Conversion
+
+```
+celsiusToFahrenheit(c)
+
+return (c * 9/5) + 32
+```
+
+---
+
+# JAX-RS REST APIs
+
+### Student JSON API
+
+```
+GET /student
+```
+
+URL
+
+```
 http://localhost:8080/RestServices/webresources/student
-------------------------------------------------------------
-REST API that returns System Status in JSON
-Create Resource: SystemService.java
-package com.rest;
+```
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+---
 
-@Path("status")
-public class SystemService {
+### System Status JSON
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String systemStatus(){
+```
+GET /status
+```
 
-        return "{\"status\":\"Server Running\"}";
-    }
-}
-Run
+URL
+
+```
 http://localhost:8080/RestServices/webresources/status
-------------------------------------------------------------
-REST API that returns HTML Response
-Create Resource: HtmlService.java
-package com.rest;
+```
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+---
 
-@Path("html")
-public class HtmlService {
+### HTML Response
 
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public String getHTML(){
+```
+GET /html
+```
 
-        return "<h1>Welcome to REST Service</h1>";
-    }
-}
-Run
+URL
+
+```
 http://localhost:8080/RestServices/webresources/html
------------------------------------------------------------------
-create a REST CRUD Library API (GET + POST) using JAX-RS.
+```
 
-Java Web → Web Application
-Project Name: LibraryREST
+---
 
-Configure REST
-Right click Project
-RESTful Web Services from Patterns
+# REST CRUD Library API
 
-Class Name: LibraryService
-Package: com.rest
+Project
 
-Create Book Class
-Create new class: Book.java
-package com.rest;
+```
+LibraryREST
+```
 
-public class Book {
+Book Class
 
-    public int id;
-    public String name;
-    public String author;
+```
+id
+name
+author
+```
 
-    public Book(){}
+GET Books
 
-    public Book(int id,String name,String author){
-        this.id=id;
-        this.name=name;
-        this.author=author;
-    }
-}
+```
+GET /library
+```
 
-Create REST Service
+POST Book
 
-Replace LibraryService.java code with:
+```
+POST /library
+```
 
-package com.rest;
+Example Output
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
-@Path("library")
-public class LibraryService {
-
-    static List<Book> books = new ArrayList<>();
-
-    static{
-        books.add(new Book(1,"Java","James Gosling"));
-        books.add(new Book(2,"Python","Guido"));
-    }
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<Book> getBooks(){
-        return books;
-    }
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    public String addBook(Book b){
-        books.add(b);
-        return "Book Added";
-    }
-}
-Right click project → Run
-
-Test GET (Fetch Books)
-
-Open browser:
-
-http://localhost:8080/LibraryREST/webresources/library
-
-Output:
-
+```
 [
  {id:1,name:"Java",author:"James Gosling"},
  {id:2,name:"Python",author:"Guido"}
 ]
+```
 
-Test POST (Add Book)
-POST
-http://localhost:8080/LibraryREST/webresources/library
