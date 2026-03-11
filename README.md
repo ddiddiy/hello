@@ -1,787 +1,351 @@
----
-# ALL COMMANDS
----
 
-## Practical 10: ARGO CD
+```markdown
+# UI/UX Practical Notes
 
-**[POWERSHELL]**
-
-```
-fork GitHub argocd
-minikube start --driver=docker
-minikube status
-kubectl status
-kubectl get nodes
-kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-kubectl get pods -n argocd
-
-kubectl port-forward svc/argo-server -n argocd 8080:443 --address 0.0.0.0
-```
-
-```
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"
-
-[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("SjZFWGdhN0lUOWp1ZlBxdw=="))
-```
+This document contains step-by-step notes for UI/UX practicals performed using **Figma / FigJam**.
 
 ---
 
-# Practical 9: Kafka Demo
+# Practical 3: User Journey Persona
 
-**[POWERSHELL]**
+## Conduct Basic User Research
+Ask users questions about **hotel booking apps**.
 
-```
-cd desktop
-mkdir kafa-demo
-```
-
-Create **Docker-compose.yml** file inside kafka-demo folder
-
-```
-version: "3.8"
-
-services:
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.6.0
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-
-  kafka:
-    image: confluentinc/cp-kafka:7.6.0
-    container_name: kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-```
-
-```
-ls
-docker compose up -d
-docker compose -f docker-compose.yml up -d
-docker ps
-```
-
-Create Topic
-
-```
-docker exec -it kafka kafka-topics --create --topic quick-demo --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
-```
-
-Open another PowerShell
-
-```
-docker exec -it kafka kafka-topics --describe --topic quick-demo --bootstrap-server localhost:9092
-docker exec -it kafka kafka-console-producer --topic quick-demo --bootstrap-server localhost:9092 .
-```
-
-Previous PowerShell
-
-```
-docker exec -it kafka kafka-console-consumer --topic quick-demo --bootstrap-server localhost:9092 .
-```
+Example questions:
+- Age and occupation
+- How often they use technology
+- Which hotel booking apps they use
+- Their goals when using the app
+- Their frustrations (slow loading, hidden charges, etc.)
 
 ---
 
-# Practical 8: Kubernetes Working & Installation
+## Create 2 User Personas
 
-**[POWERSHELL]**
+Steps:
 
-```
-minikube start --driver=docker
-minikube status
-kubectl get nodes
+1. Open **FigJam**
+2. Click **+ → Templates**
+3. Search **User Persona**
+4. Select the template
+5. Edit details according to the **survey results**
 
-kubectl create deployment hello-minikube --image=kicbase/echo-server:1.0
-
-kubectl expose deployment hello-minikube --type=NodePort --port=8080
-
-minikube service hello-minikube --url
-```
-
----
-
-# Assignment
-
-### Build an image installing git and apache2 via Dockerfile
-
-Create folder **soa**
-
-Create 2 files
-
-```
-index.html
-Dockerfile
-```
-
-Dockerfile
-
-```
-FROM ubuntu:22.04
-
-RUN sed -i 's/archive.ubuntu.com/mirrors.edge.kernel.org/g' /etc/apt/sources.list
-
-RUN apt-get update && apt-get install -y \
-    git \
-    apache2 \
-    && apt-get clean
-
-COPY index.html /var/www/html/index.html
-
-EXPOSE 80
-
-CMD ["apachectl", "-D","FOREGROUND"]
-```
-
-Open **soa folder in PowerShell**
-
-```
-docker build -t apache-docker .
-docker run -d -p 8090:80 apache-docker
-```
-
-Access Website
-
-```
-http://localhost:8090
-```
-
-Deploy to Kubernetes
-
-```
-minikube image load apache-docker
-
-kubectl create deployment apache-deployment --image=apache-docker --image-pull-policy=Never
-
-minikube service apache-deployment
-```
+Example fields to edit:
+- Name
+- Age
+- Occupation
+- Goals
+- Frustrations
+- Technology usage
 
 ---
 
-# Practical 6: RESTful API Microservice + Docker Image
+# Practical 6: Vertical & Horizontal Scrolling in Figma
 
-Create Web App in NetBeans
+## Create Mobile Frame
 
-```
-microservice
-pattern: microservice-jaxrs
-resource package: com.example
-```
-
-```
-public String hello(){
-    return "Jax-RS Microservice -DockerReady";
-}
-
-@GET
-@Path("status")
-@Produces(MediaType.APPLICATION_JSON)
-public String status(){
-    return "{\"status\":\"healthy\",\"service\":\"microservice\"}";
-}
-```
-
-WAR file generated in:
-
-```
-project > dist
-```
-
-Dockerfile
-
-```
-FROM tomcat:8.5-jdk8
-
-COPY microservice-jaxrs.war /usr/local/tomcat/webapps/ROOT.war
-
-EXPOSE 8080
-
-CMD ["catalina.sh", "run"]
-```
-
-Commands
-
-```
-docker build -t microservice .
-docker run microservice
-
-docker run -d -p 9090:8080 --name jax-rs microservice
-```
-
-Open Browser
-
-```
-localhost:9090
-```
+1. Click **Frame Tool (F)**
+2. Select **iPhone 14 / 390 × 844**
+3. Rename frame → **Home Screen**
 
 ---
 
-# Practical 5: Docker with SQL
+## Create Search Bar
 
-Create Folder
+1. Press **R → Rectangle**
+2. Size:
+   - Width: **350**
+   - Height: **40**
+3. Corner Radius → **20**
 
-Files
+Add:
+- Text → `Hinted search text`
+- Menu icon (left)
+- Search icon (right)
 
-```
-hello.py
-Dockerfile
-```
-
-hello.py
-
-```
-print("hello from python")
-```
-
-Dockerfile
-
-```
-FROM python:3.12-slim
-
-WORKDIR /app
-
-COPY hello.py .
-
-CMD ["python","hello.py"]
-```
-
-Commands
-
-```
-docker build -t py-hello .
-
-docker run py-hello
-
-docker pull mysql:latest
-
-docker run -d --name mydemo -p 3306:3306 -e MYSQL_ROOT_PASSWORD=student123 mysql:latest
-
-docker exec -it mydemo mysql -uroot -pstudent123
-```
+Place the search bar **at the top of the frame**.
 
 ---
 
-# Practical 4: JAX-RS Client
+## Create Horizontal Scrolling Food Cards
 
-Create Java Application
+Steps:
 
-```
-JAXRS_Client
-```
-
-Add Library → JAXRS
-
-Create Class
+1. Insert **4–6 circle images**
+2. Paste images using:
 
 ```
-restClient.java
-```
+
+Ctrl + Shift + V
 
 ```
-public static void main(String[] args){
 
-    Client c = ClientBuilder.newClient();
+3. Select all circles
+4. Press:
 
-    WebTarget t = c.target("http://localhost:8080/restPatterns/webresources/strings/upper")
-            .queryParam("text","hello shelly");
+```
 
-    String res = t.request(MediaType.TEXT_PLAIN).get(String.class);
+Shift + A
 
-    System.out.println("RESPONSE: "+res);
+```
 
-    c.close();
-}
+5. Apply **Auto Layout → Horizontal**
+
+Create a **frame** and drag the images inside the frame.
+
+Go to **Prototype Panel**:
+
+```
+
+Overflow Behavior → Horizontal Scrolling
+
+```
+
+Now the row **scrolls left and right**.
+
+---
+
+## Create Vertical Scrolling Food Cards
+
+These are the **large food images in the center of the screen**.
+
+Steps:
+
+1. Create rectangle
+
+```
+
+Width: 350
+Height: 180
+
+```
+
+2. Add food image
+3. Duplicate **3–4 times**
+
+Select all cards:
+
+```
+
+Shift + A → Auto Layout
+
+```
+
+Create a **frame** and place them inside.
+
+Set:
+
+```
+
+Direction → Vertical
+Spacing → 20
+
+```
+
+Run **Prototype** to test scrolling.
+
+---
+
+# Practical 7: Website Redesign (Color & Typography using Variables)
+
+## Create Desktop Frame
+
+1. Press **F**
+2. Select **Desktop 1440px**
+
+---
+
+## Create Color Variables
+
+Do **not select any frame**.
+
+Steps:
+
+1. Open **Variables**
+2. Create **Practice Collection**
+
+Add variables:
+
+| Variable Name | Color |
+|---------------|------|
+| Primary | #FF7A00 |
+| Secondary | #222222 |
+
+---
+
+## Create Number Variables
+
+Example:
+
+| Variable | Value |
+|---------|------|
+| Size | 34 |
+| Size | 10 |
+
+These variables help maintain **consistent typography and spacing**.
+
+---
+
+# Practical 9: Gamification
+
+Steps:
+
+1. Create a **Frame → iPhone 17**
+2. Create a **Rectangle**
+3. Add text
+
+Create **second frame**.
+
+Go to:
+
+```
+
+Plugins → Widgets → Assets
+
+```
+
+Search:
+
+```
+
+LottieFiles
+
+```
+
+Steps:
+
+1. Run plugin
+2. Insert animation
+3. Close plugin
+
+Run **Prototype** to test animation.
+
+---
+
+# Practical 10: Micro Animation
+
+## Progress Bar Animation
+
+1. Create a **rectangle**
+2. Create **second rectangle inside it**
+3. Color → **Green**
+
+Select both rectangles:
+
+```
+
+Create Component
+
+```
+
+Right panel:
+
+```
+
+Component → Properties → + Variant
+
+```
+
+Click **+** to create variants.
+
+Go to **Prototype**:
+
+```
+
+Interaction → After Delay
+Animation → Smart Animate
+
+```
+
+Create a **new frame**.
+
+From **Assets → Components**, drag the **progress bar**.
+
+---
+
+## Loader Animation
+
+Steps:
+
+1. Create **multiple circles**
+2. Select all circles
+3. Convert to **Component**
+
+Add **variants**:
+
+```
+
+* Variant (4 times)
+
+```
+
+Alignment:
+
+```
+
+Center Vertical
+Center Horizontal
+
+```
+
+Create new **frame**.
+
+From **Assets**, drag the **loader component**.
+
+Add prototype interaction:
+
+```
+
+On Delay
+
 ```
 
 ---
 
-# Practical 3: JAX-RS Demo
+## Status Bar Animation
 
-Project
+Steps:
 
-```
-UpperLower
-```
+1. Create **circle**
+2. Copy paste another circle
+3. Set **Arc = 25%**
 
-Resource
+Create **Component → Variant**
 
-```
-stringRS
-package: stringrs
-```
+Add more variants:
 
 ```
-@GET
-@Path("lower")
-@Produces(MediaType.TEXT_PLAIN)
-public String toLower(@QueryParam("text") String text){
-    return text.toLowerCase();
-}
 
-@GET
-@Path("upper")
-@Consumes(MediaType.TEXT_PLAIN)
-public String toUpper(@QueryParam("text") String text){
-    return text.toUpperCase();
-}
-```
-
-HelloWorld Service
+Arc 50%
+Arc 75%
+Arc 100%
 
 ```
-@GET
-@Produces(MediaType.TEXT_HTML)
-public String getXml(){
-    return "<html><body>HELLO WORLD</body></html>";
-}
 
-@PUT
-@Path("{id}")
-@Produces(MediaType.TEXT_PLAIN)
-@Consumes(MediaType.APPLICATION_JSON)
-
-public Response updateMessage(@PathParam("id") String id, String message){
-
-    String result = "Update message " + id + " with " + message;
-
-    return Response.ok(result).build();
-}
-```
+Create a **frame** and place the component inside.
 
 ---
 
-# Practical 2: JAX-WS (NAAC Web Service)
+## Welcome Screen
 
-Create Web App
+Create a **simple welcome UI** with:
 
-```
-NaacRate
-```
+- Heading
+- Illustration
+- Button
 
-Web Service
-
-```
-NaacService
-package: client
-```
-
-```
-@WebMethod(operationName = "rate")
-public String rate(@WebParam(name = "naac") String naac){
-
-    if("jai hind".equals(naac)){
-        return "A";
-    }
-
-    else if("kc".equals(naac)){
-        return "B";
-    }
-
-    return "invalid";
-}
-```
-
-Client
-
-```
-public static void main(String[] args){
-
-    client.NaacService_Service Service = new client.NaacService_Service();
-
-    client.NaacService port = Service.getNaacServicePort();
-
-    String collegeName = "kc";
-
-    String result = port.rate(collegeName);
-
-    System.out.println("RATING: " + result);
-}
-```
+Add **micro animation** for better user experience.
 
 ---
 
-# JAX-WS SOAP Services
+# Summary
 
-### Currency Conversion
+These practicals demonstrate key **UI/UX design techniques**:
 
-```
-convertUSDToINR(double usd)
-rate = 83
-return usd * rate
-```
-
-WSDL
-
-```
-http://localhost:8080/CurrencySOAP/CurrencyService?wsdl
+- User Research & Personas
+- Vertical & Horizontal Scrolling
+- Website Redesign with Variables
+- Gamification Elements
+- Micro Animations
 ```
 
----
-
-### Student Details
-
-```
-getStudentDetails(int id)
-```
-
-```
-if(id == 1) Rahul IT
-if(id == 2) Anita CS
-else Student Not Found
-```
-
----
-
-### Power Service
-
-```
-power(a,b) = Math.pow(a,b)
-```
-
----
-
-### Temperature Conversion
-
-```
-celsiusToFahrenheit(c)
-
-return (c * 9/5) + 32
-```
-
----
-
-# JAX-RS REST APIs
-
-### Student JSON API
-
-```
-GET /student
-```
-
-URL
-
-```
-http://localhost:8080/RestServices/webresources/student
-```
-
----
-
-### System Status JSON
-
-```
-GET /status
-```
-
-URL
-
-```
-http://localhost:8080/RestServices/webresources/status
-```
-
----
-
-### HTML Response
-
-```
-GET /html
-```
-
-URL
-
-```
-http://localhost:8080/RestServices/webresources/html
-```
-
----
-
-# REST CRUD Library API
-
-Project
-
-```
-LibraryREST
-```
-
-Book Class
-
-```
-id
-name
-author
-```
-
-GET Books
-
-```
-GET /library
-```
-
-POST Book
-
-```
-POST /library
-```
-
-Example Output
-
-```
-[
- {id:1,name:"Java",author:"James Gosling"},
- {id:2,name:"Python",author:"Guido"}
-]
-```
-
-````md
-# LibraryREST (JAX-RS + MySQL)
-
-# Book Fields
-
-Each book contains:
-
-- id (long)
-- title (String)
-- author (String)
-- isbn (String)
-
----
-
-# Technologies Used
-
-- Java
-- JAX-RS (Jersey)
-- MySQL Database
-- JDBC
-- REST API
-- JSON
-
----
-
-# Database Setup
-
-Create the database and table.
-
-```sql
-CREATE DATABASE librarydb;
-
-USE librarydb;
-
-CREATE TABLE books (
-    id BIGINT PRIMARY KEY,
-    title VARCHAR(255),
-    author VARCHAR(255),
-    isbn VARCHAR(50)
-);
-```
-````
-
----
-
-# Project Structure
-
-```
-LibraryREST
-│
-├── src/main/java
-│   ├── model
-│   │   └── Book.java
-│   │
-│   ├── dao
-│   │   └── BookDAO.java
-│   │
-│   ├── service
-│   │   └── LibraryService.java
-│   │
-│   └── config
-│       └── ApplicationConfig.java
-```
-
----
-
-# Book Model
-
-```java
-package model;
-
-public class Book {
-
-    private long id;
-    private String title;
-    private String author;
-    private String isbn;
-
-    public Book(){}
-
-    public Book(long id, String title, String author, String isbn) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.isbn = isbn;
-    }
-
-    public long getId() { return id; }
-
-    public void setId(long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-
-    public void setTitle(String title) { this.title = title; }
-
-    public String getAuthor() { return author; }
-
-    public void setAuthor(String author) { this.author = author; }
-
-    public String getIsbn() { return isbn; }
-
-    public void setIsbn(String isbn) { this.isbn = isbn; }
-}
-```
-
----
-
-# Database Connection (DAO)
-
-```java
-package dao;
-
-import model.Book;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
-public class BookDAO {
-
-    private Connection getConnection() throws Exception {
-        String url = "jdbc:mysql://localhost:3306/librarydb";
-        String user = "root";
-        String password = "root";
-
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        return DriverManager.getConnection(url, user, password);
-    }
-
-    public void addBook(Book book) throws Exception {
-        Connection con = getConnection();
-        String query = "INSERT INTO books VALUES (?,?,?,?)";
-
-        PreparedStatement ps = con.prepareStatement(query);
-        ps.setLong(1, book.getId());
-        ps.setString(2, book.getTitle());
-        ps.setString(3, book.getAuthor());
-        ps.setString(4, book.getIsbn());
-
-        ps.executeUpdate();
-        con.close();
-    }
-
-    public List<Book> getBooks() throws Exception {
-        Connection con = getConnection();
-        List<Book> list = new ArrayList<>();
-
-        Statement st = con.createStatement();
-        ResultSet rs = st.executeQuery("SELECT * FROM books");
-
-        while(rs.next()){
-            Book b = new Book(
-                rs.getLong("id"),
-                rs.getString("title"),
-                rs.getString("author"),
-                rs.getString("isbn")
-            );
-            list.add(b);
-        }
-
-        con.close();
-        return list;
-    }
-}
-```
-
----
-
-# REST Service
-
-```java
-package service;
-
-import dao.BookDAO;
-import model.Book;
-
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import java.util.List;
-
-@Path("/books")
-public class LibraryService {
-
-    BookDAO dao = new BookDAO();
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<Book> getBooks() throws Exception {
-        return dao.getBooks();
-    }
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Book addBook(Book book) throws Exception {
-        dao.addBook(book);
-        return book;
-    }
-}
-```
-
----
-
-# Application Configuration
-
-```java
-package config;
-
-import jakarta.ws.rs.ApplicationPath;
-import jakarta.ws.rs.core.Application;
-
-@ApplicationPath("/api")
-public class ApplicationConfig extends Application {
-}
-```
-
----
-
-# API Endpoints
-
-## Get All Books
-
-```
-GET /api/books
-```
-
----
-
-## Add Book
-
-```
-POST /api/books
-```
-
-Example JSON:
-
-```json
-{
-  "id": 1,
-  "title": "Java Programming",
-  "author": "James Gosling",
-  "isbn": "12345"
-}
-```
