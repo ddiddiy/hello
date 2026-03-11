@@ -14,8 +14,8 @@ kubectl get pods -n argocd
 
 kubectl port-forward svc/argo-server -n argocd 8080:443 --address 0.0.0.0
 
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"
-[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("SjZFWGdhN0lUOWp1ZlBxdw=="))
+<h5>kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"
+[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("SjZFWGdhN0lUOWp1ZlBxdw=="))</h5>
 ------------------------------------------------------------------------------------
 practical 9: Kafka Demo
 [POWERSHELL]
