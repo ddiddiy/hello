@@ -1,9 +1,5 @@
-
-
 ---
-
 # ALL COMMANDS
-
 ---
 
 ## Practical 10: ARGO CD
@@ -546,3 +542,246 @@ Example Output
 ]
 ```
 
+````md
+# LibraryREST (JAX-RS + MySQL)
+
+# Book Fields
+
+Each book contains:
+
+- id (long)
+- title (String)
+- author (String)
+- isbn (String)
+
+---
+
+# Technologies Used
+
+- Java
+- JAX-RS (Jersey)
+- MySQL Database
+- JDBC
+- REST API
+- JSON
+
+---
+
+# Database Setup
+
+Create the database and table.
+
+```sql
+CREATE DATABASE librarydb;
+
+USE librarydb;
+
+CREATE TABLE books (
+    id BIGINT PRIMARY KEY,
+    title VARCHAR(255),
+    author VARCHAR(255),
+    isbn VARCHAR(50)
+);
+```
+````
+
+---
+
+# Project Structure
+
+```
+LibraryREST
+│
+├── src/main/java
+│   ├── model
+│   │   └── Book.java
+│   │
+│   ├── dao
+│   │   └── BookDAO.java
+│   │
+│   ├── service
+│   │   └── LibraryService.java
+│   │
+│   └── config
+│       └── ApplicationConfig.java
+```
+
+---
+
+# Book Model
+
+```java
+package model;
+
+public class Book {
+
+    private long id;
+    private String title;
+    private String author;
+    private String isbn;
+
+    public Book(){}
+
+    public Book(long id, String title, String author, String isbn) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+    }
+
+    public long getId() { return id; }
+
+    public void setId(long id) { this.id = id; }
+
+    public String getTitle() { return title; }
+
+    public void setTitle(String title) { this.title = title; }
+
+    public String getAuthor() { return author; }
+
+    public void setAuthor(String author) { this.author = author; }
+
+    public String getIsbn() { return isbn; }
+
+    public void setIsbn(String isbn) { this.isbn = isbn; }
+}
+```
+
+---
+
+# Database Connection (DAO)
+
+```java
+package dao;
+
+import model.Book;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BookDAO {
+
+    private Connection getConnection() throws Exception {
+        String url = "jdbc:mysql://localhost:3306/librarydb";
+        String user = "root";
+        String password = "root";
+
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        return DriverManager.getConnection(url, user, password);
+    }
+
+    public void addBook(Book book) throws Exception {
+        Connection con = getConnection();
+        String query = "INSERT INTO books VALUES (?,?,?,?)";
+
+        PreparedStatement ps = con.prepareStatement(query);
+        ps.setLong(1, book.getId());
+        ps.setString(2, book.getTitle());
+        ps.setString(3, book.getAuthor());
+        ps.setString(4, book.getIsbn());
+
+        ps.executeUpdate();
+        con.close();
+    }
+
+    public List<Book> getBooks() throws Exception {
+        Connection con = getConnection();
+        List<Book> list = new ArrayList<>();
+
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery("SELECT * FROM books");
+
+        while(rs.next()){
+            Book b = new Book(
+                rs.getLong("id"),
+                rs.getString("title"),
+                rs.getString("author"),
+                rs.getString("isbn")
+            );
+            list.add(b);
+        }
+
+        con.close();
+        return list;
+    }
+}
+```
+
+---
+
+# REST Service
+
+```java
+package service;
+
+import dao.BookDAO;
+import model.Book;
+
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import java.util.List;
+
+@Path("/books")
+public class LibraryService {
+
+    BookDAO dao = new BookDAO();
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Book> getBooks() throws Exception {
+        return dao.getBooks();
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Book addBook(Book book) throws Exception {
+        dao.addBook(book);
+        return book;
+    }
+}
+```
+
+---
+
+# Application Configuration
+
+```java
+package config;
+
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.core.Application;
+
+@ApplicationPath("/api")
+public class ApplicationConfig extends Application {
+}
+```
+
+---
+
+# API Endpoints
+
+## Get All Books
+
+```
+GET /api/books
+```
+
+---
+
+## Add Book
+
+```
+POST /api/books
+```
+
+Example JSON:
+
+```json
+{
+  "id": 1,
+  "title": "Java Programming",
+  "author": "James Gosling",
+  "isbn": "12345"
+}
+```
